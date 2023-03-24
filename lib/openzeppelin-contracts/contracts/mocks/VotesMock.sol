@@ -22,14 +22,14 @@ contract VotesMock is Votes {
         return _balances[account];
     }
 
-    function mint(address account, uint256 _auctionId) external {
+    function mint(address account, uint256 voteId) external {
         _balances[account] += 1;
-        _owners[_auctionId] = account;
+        _owners[voteId] = account;
         _transferVotingUnits(address(0), account, 1);
     }
 
-    function burn(uint256 _auctionId) external {
-        address owner = _owners[_auctionId];
+    function burn(uint256 voteId) external {
+        address owner = _owners[voteId];
         _balances[owner] -= 1;
         _transferVotingUnits(owner, address(0), 1);
     }

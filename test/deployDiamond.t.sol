@@ -5,6 +5,8 @@ import "../contracts/interfaces/IDiamondCut.sol";
 import "../contracts/facets/DiamondCutFacet.sol";
 import "../contracts/facets/DiamondLoupeFacet.sol";
 import "../contracts/facets/OwnershipFacet.sol";
+import "../contracts/facets/AuctionFacet.sol";
+
 import "../../lib/forge-std/src/Test.sol";
 import "../contracts/Diamond.sol";
 
@@ -14,6 +16,7 @@ contract DiamondDeployer is Test, IDiamondCut {
     DiamondCutFacet dCutFacet;
     DiamondLoupeFacet dLoupe;
     OwnershipFacet ownerF;
+    AuctionFacet auctionF;
 
     function testDeployDiamond() public {
         //deploy facets
@@ -21,6 +24,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         diamond = new Diamond(address(this), address(dCutFacet));
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
+        auctionF = new AuctionFacet();
 
         //upgrade diamond with facets
 
@@ -60,6 +64,18 @@ contract DiamondDeployer is Test, IDiamondCut {
         cmd[2] = _facetName;
         bytes memory res = vm.ffi(cmd);
         selectors = abi.decode(res, (bytes4[]));
+    }
+
+    function testaddAuctionFacet() public {
+        testDeployDiamond();
+        FacetCut[] memory slice = new FacetCut[](1);
+        slice[0] = ( FacetCut({
+            facetAddress: address(auctionF),
+            action: FacetCutAction.Add,
+            functionSelectors: generateSelectors("AuctionFacet")
+        }));
+        IDiamondCut(address(diamond)).diamondCut(slice, address(0), "");
+         DiamondLoupeFacet(address(diamond)).facetAddresses();
     }
 
     function diamondCut(
